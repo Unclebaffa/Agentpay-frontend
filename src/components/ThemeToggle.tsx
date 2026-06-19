@@ -4,18 +4,15 @@ import { useEffect, useState } from "react";
 import { readTheme, writeTheme, effectiveTheme, type Theme } from "@/lib/theme";
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("system");
+  const [theme, setTheme] = useState<Theme>(() => readTheme());
 
   useEffect(() => {
-    const t = readTheme();
-    setTheme(t);
-    document.documentElement.classList.toggle("dark", effectiveTheme(t) === "dark");
-  }, []);
+    document.documentElement.classList.toggle("dark", effectiveTheme(theme) === "dark");
+  }, [theme]);
 
   const set = (next: Theme) => {
     setTheme(next);
     writeTheme(next);
-    document.documentElement.classList.toggle("dark", effectiveTheme(next) === "dark");
   };
 
   return (

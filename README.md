@@ -68,6 +68,15 @@ A baseline security header set (CSP, `X-Frame-Options: DENY`, `Referrer-Policy`,
 
 The `/events` page renders server-supplied JSON payloads. Each payload is serialised through `safeStringify` (`src/lib/format.ts`) with a hard cap (`EVENT_PAYLOAD_MAX_CHARS`, default 5,000 chars) and a visible `…(truncated)` marker. Circular references, `BigInt`, functions, and malformed timestamps are replaced with safe sentinels so a bad payload can't crash the page.
 
+## Services list paging
+
+The `/services` page now uses server-driven pagination with the shared `Spinner`, `EmptyState`, and `Pagination` components.
+
+- Requests are sent as `GET /api/v1/services?page=N&limit=25`.
+- The page assumes the backend returns a paged payload with `services` or `items`, plus `page` and `pageCount`.
+- If the backend clamps an out-of-range request, the UI follows the server-provided `page` and `pageCount` so the visible indicator stays in sync.
+- Service rows link through to `/services/:serviceId` using encoded IDs.
+
 ## Commands
 
 | Command | Description |

@@ -18,15 +18,15 @@ function format(deltaMs: number): string {
 }
 
 export function TimeAgo({ ts }: { ts: number }) {
-  const [, force] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    const t = setInterval(() => force((n) => n + 1), 30_000);
+    const t = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(t);
   }, []);
   const iso = new Date(ts).toISOString();
   return (
     <time dateTime={iso} title={iso}>
-      {format(Date.now() - ts)}
+      {format(now - ts)}
     </time>
   );
 }

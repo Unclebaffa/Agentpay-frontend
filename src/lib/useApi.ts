@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { apiGet } from "./apiClient";
 
 type State<T> =
@@ -10,18 +10,21 @@ type State<T> =
 
 /** Fetch JSON from the AgentPay backend and react to path changes. */
 export function useApi<T>(path: string | null): State<T> {
-  const [state, setState] = useState<State<T>>({ status: "loading" });
+  const [state, dispatch] = useReducer(
+    (_state: State<T>, action: State<T>) => action,
+    { status: "loading" } as State<T>
+  );
 
   useEffect(() => {
     if (path === null) return;
     let cancelled = false;
-    setState({ status: "loading" });
+    dispatch({ status: "loading" });
     apiGet<T>(path)
-      .then((data) => !cancelled && setState({ status: "ok", data }))
+      .then((data) => !cancelled && dispatch({ status: "ok", data }))
       .catch(
         (e) =>
           !cancelled &&
-          setState({
+          dispatch({
             status: "error",
             error: (e as Error).message ?? "failed to load",
           })
