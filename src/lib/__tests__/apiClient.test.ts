@@ -60,6 +60,10 @@ describe("apiClient", () => {
     jest.resetModules();
   });
 
+  function mockFetch(fn: jest.Mock) {
+    globalThis.fetch = fn as unknown as typeof globalThis.fetch;
+  }
+
   it("prefixes GETs with the localhost default base URL", async () => {
     const fetchMock = jest.fn(async (url, init) => {
       expect(url).toBe("http://localhost:3001/api/v1/things");
@@ -148,6 +152,8 @@ describe("apiClient", () => {
 
     const { apiDelete } = await loadApiClient();
     await expect(apiDelete("/api/v1/things/1")).resolves.toBeUndefined();
+  });
+
   afterEach(() => {
     jest.useRealTimers();
     global.fetch = originalFetch;

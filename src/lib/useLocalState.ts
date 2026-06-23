@@ -1,31 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-/**
- * useState backed by window.localStorage. SSR-safe — initial state is
- * the fallback until the hydration effect runs.
- */
 export function useLocalState<T>(
   key: string,
   initial: T
 ): [T, (next: T) => void] {
-  const [value, setValue] = useState<T>(() => {
-    if (typeof window === "undefined") return initial;
+  const [value, setValue] = useState<T>(initial);
+
+  // Read from localStorage after mount only — keeps SSR output deterministic
+  // and avoids calling localStorage during renderToString.
+  useEffect(() => {
     try {
       const raw = window.localStorage.getItem(key);
-      return raw !== null ? (JSON.parse(raw) as T) : initial;
+      if (raw !== null) setValue(JSON.parse(raw) as T);
     } catch {
-      return initial;
+      /* ignore invalid JSON */
     }
-  });
+  }, [key]);
 
   const write = (next: T) => {
     setValue(next);
     try {
       window.localStorage.setItem(key, JSON.stringify(next));
     } catch {
-      /* ignore */
+      /* ignore quota errors */
     }
   };
 

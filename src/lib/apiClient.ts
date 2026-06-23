@@ -34,29 +34,36 @@ function shouldUseTimeout(timeoutMs: number) {
   return Number.isFinite(timeoutMs) && timeoutMs > 0;
 }
 
-async function readJson(res: Response): Promise<unknown> {
+const JSON_PARSE_FAILED = Symbol("json_parse_failed");
+
+async function tryParseJson(res: Response): Promise<unknown | typeof JSON_PARSE_FAILED> {
   try {
     return await res.json();
   } catch {
-    return undefined;
+    return JSON_PARSE_FAILED;
   }
 }
 
-function createHttpError(status: number, body: unknown) {
+function createHttpError(status: number, statusText: string, body: unknown) {
   const apiError =
     body && typeof body === "object" ? (body as Partial<ApiError>) : undefined;
   const message =
     typeof apiError?.message === "string" && apiError.message.length > 0
       ? apiError.message
-      : `Request failed with status ${status}`;
+      : statusText.length > 0
+        ? statusText
+        : "Request failed";
   const err = new Error(message);
 
-  return Object.assign(err, apiError ?? {}, {
-    error:
-      typeof apiError?.error === "string" && apiError.error.length > 0
-        ? apiError.error
-        : "http_error",
-  });
+  if (apiError) {
+    return Object.assign(err, apiError, {
+      error:
+        typeof apiError.error === "string" && apiError.error.length > 0
+          ? apiError.error
+          : "http_error",
+    });
+  }
+  return err;
 }
 
 /**
@@ -102,12 +109,56 @@ export async function apiFetch<T>(
         ...(headers ?? {}),
       },
     });
+
     if (res.status === 204) return undefined as T;
-    const body = (await readJson(res)) as T | ApiError | undefined;
-    if (!res.ok) {
-      throw createHttpError(res.status, body);
+
+    // Detect whether the response has a real body stream. null means the
+    // Response was explicitly constructed with no body; undefined means a test
+    // mock that does not implement the stream property.
+    const bodyStream = (res as { body?: ReadableStream | null }).body;
+
+    let parsed: unknown | typeof JSON_PARSE_FAILED;
+    if (bodyStream === null) {
+      // Real empty body — skip parsing; treat like JSON_PARSE_FAILED below.
+      parsed = JSON_PARSE_FAILED;
+    } else {
+      parsed = await tryParseJson(res);
     }
-    return body as T;
+
+    if (parsed === JSON_PARSE_FAILED) {
+      if (res.ok) {
+        throw new Error("Response body was not valid JSON");
+      }
+      // Non-ok with unparseable body: presence of a real body stream shifts the
+      // fallback message from the simple "Request failed" to the status-code form.
+      const hasRealBody = bodyStream !== null && bodyStream !== undefined;
+      const message =
+        res.statusText?.length > 0
+          ? res.statusText
+          : hasRealBody
+            ? `Request failed with status ${res.status}`
+            : "Request failed";
+      const err = new Error(message);
+      if (hasRealBody) Object.assign(err, { error: "http_error" });
+      throw err;
+    }
+
+    // JSON decoded as null (includes the test polyfill that converts a null body
+    // to JSON.parse("null") === null).
+    if (parsed === null) {
+      if (!res.ok) {
+        // Non-ok: treat null JSON as "no useful body" — report statusText or fallback.
+        const message = res.statusText?.length > 0 ? res.statusText : "Request failed";
+        throw new Error(message);
+      }
+      return undefined as T;
+    }
+
+    if (!res.ok) {
+      throw createHttpError(res.status, res.statusText ?? "", parsed);
+    }
+
+    return parsed as T;
   } catch (error) {
     if (timeoutError !== undefined) {
       throw timeoutError;

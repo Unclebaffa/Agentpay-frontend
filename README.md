@@ -139,6 +139,31 @@ The `/services` page now uses server-driven pagination with the shared `Spinner`
 - If the backend clamps an out-of-range request, the UI follows the server-provided `page` and `pageCount` so the visible indicator stays in sync.
 - Service rows link through to `/services/:serviceId` using encoded IDs.
 
+## Route map (frontend)
+
+| Path | Page |
+|------|------|
+| `/` | Home / dashboard |
+| `/about` | About |
+| `/admin` | Admin panel |
+| `/agents` | Agents list |
+| `/agents/:agent` | Agent detail |
+| `/api-keys` | API key management |
+| `/changelog` | Changelog |
+| `/docs` | Documentation |
+| `/events` | Event log |
+| `/export` | Data export |
+| `/search` | Search |
+| `/services` | Services list |
+| `/services/:serviceId` | Service detail |
+| `/services/:serviceId/agents` | Service agents |
+| `/services/:serviceId/edit` | Edit service |
+| `/services/new` | New service |
+| `/settings` | Settings |
+| `/stats` | Statistics |
+| `/usage` | Usage |
+| `/webhooks` | Webhooks |
+
 ## Commands
 
 | Command | Description |
