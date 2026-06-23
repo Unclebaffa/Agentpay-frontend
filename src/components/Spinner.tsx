@@ -2,7 +2,11 @@ type Props = { label?: string };
 
 export function Spinner({ label = "Loading" }: Props) {
   return (
-    <span role="status" className="inline-flex items-center gap-2 text-sm">
+    <span
+      role="status"
+      aria-live="polite"
+      className="inline-flex items-center gap-2 text-sm"
+    >
       <svg
         aria-hidden="true"
         className="h-4 w-4 animate-spin"

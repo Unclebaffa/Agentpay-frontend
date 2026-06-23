@@ -1,6 +1,12 @@
 "use client";
 
-import { type ReactNode } from "react";
+import {
+  type KeyboardEvent,
+  type ReactNode,
+  useEffect,
+  useId,
+  useRef,
+} from "react";
 
 type Props = {
   open: boolean;
@@ -12,6 +18,25 @@ type Props = {
   onCancel: () => void;
 };
 
+const focusableSelector = [
+  "a[href]",
+  "button:not([disabled])",
+  "textarea:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+  "[contenteditable='true']",
+].join(",");
+
+function getFocusableElements(container: HTMLElement) {
+  return Array.from(container.querySelectorAll<HTMLElement>(focusableSelector))
+    .filter((element) => !element.hasAttribute("disabled") && element.tabIndex !== -1);
+}
+
+/**
+ * Keyboard-accessible confirmation modal with focus trap, Escape-to-cancel,
+ * focus restoration, and scroll locking for WCAG 2.1 dialog behavior.
+ */
 export function ConfirmDialog({
   open,
   title,
@@ -21,12 +46,92 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: Props) {
+  const descriptionId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const dialog = dialogRef.current;
+    if (dialog) {
+      const [firstFocusable] = getFocusableElements(dialog);
+      (firstFocusable ?? dialog).focus();
+    }
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      if (previousFocusRef.current && document.contains(previousFocusRef.current)) {
+        previousFocusRef.current.focus();
+      }
+      previousFocusRef.current = null;
+    };
+  }, [open]);
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      onCancel();
+      return;
+    }
+
+    if (event.key !== "Tab") return;
+
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const focusableElements = getFocusableElements(dialog);
+    if (focusableElements.length === 0) {
+      event.preventDefault();
+      dialog.focus();
+      return;
+    }
+
+    const firstFocusable = focusableElements[0];
+    const lastFocusable = focusableElements[focusableElements.length - 1];
+    const activeElement = document.activeElement;
+
+    if (activeElement === dialog) {
+      event.preventDefault();
+      (event.shiftKey ? lastFocusable : firstFocusable).focus();
+      return;
+    }
+
+    if (!dialog.contains(activeElement)) {
+      event.preventDefault();
+      firstFocusable.focus();
+      return;
+    }
+
+    if (event.shiftKey && activeElement === firstFocusable) {
+      event.preventDefault();
+      lastFocusable.focus();
+      return;
+    }
+
+    if (!event.shiftKey && activeElement === lastFocusable) {
+      event.preventDefault();
+      firstFocusable.focus();
+    }
+  };
+
   if (!open) return null;
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-title"
+      aria-describedby={description ? descriptionId : undefined}
+      tabIndex={-1}
+      onKeyDown={handleKeyDown}
       className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4"
     >
       <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-zinc-900">
@@ -34,7 +139,7 @@ export function ConfirmDialog({
           {title}
         </h2>
         {description && (
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <p id={descriptionId} className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             {description}
           </p>
         )}

@@ -8,7 +8,31 @@ type State<T> =
   | { status: "error"; error: string }
   | { status: "ok"; data: T };
 
-/** Fetch JSON from the AgentPay backend and react to path changes. */
+type Action<T> =
+  | { type: "loading" }
+  | { type: "error"; error: string }
+  | { type: "ok"; data: T };
+
+function reducer<T>(_state: State<T>, action: Action<T>): State<T> {
+  switch (action.type) {
+    case "loading":
+      return { status: "loading" };
+    case "error":
+      return { status: "error", error: action.error };
+    case "ok":
+      return { status: "ok", data: action.data };
+  }
+}
+
+/**
+ * Fetch JSON from the AgentPay backend and react to path changes.
+ *
+ * @example
+ * const state = useApi<{ items: AppEvent[] }>("/api/v1/events?limit=100");
+ * if (state.status === "loading") return <Spinner label="Loading events" />;
+ * if (state.status === "error") return <p role="alert">{state.error}</p>;
+ * return <EventList items={state.data.items} />;
+ */
 export function useApi<T>(path: string | null): State<T> {
   const [state, dispatch] = useReducer(
     (_state: State<T>, action: State<T>) => action,

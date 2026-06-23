@@ -41,16 +41,56 @@ Dashboard and Stellar wallet integration for the AgentPay protocol (machine-to-m
 ```
 agentpay-frontend/
 ├── src/
-│   └── app/
-│       ├── layout.tsx
-│       ├── page.tsx
-│       └── page.test.tsx
+│   ├── app/
+│   │   ├── layout.tsx
+│   │   ├── loading.tsx
+│   │   ├── error.tsx
+│   │   ├── not-found.tsx
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── page.tsx                                 # /
+│   │   ├── about/page.tsx                           # /about
+│   │   ├── admin/page.tsx                           # /admin
+│   │   ├── agents/page.tsx                         # /agents
+│   │   │   └── [agent]/page.tsx                   # /agents/:agent
+│   │   ├── api-keys/page.tsx                      # /api-keys
+│   │   ├── changelog/page.tsx                      # /changelog
+│   │   ├── docs/page.tsx                           # /docs
+│   │   ├── events/page.tsx                        # /events
+│   │   ├── export/page.tsx                        # /export
+│   │   ├── search/page.tsx                        # /search
+│   │   ├── services/page.tsx                     # /services
+│   │   │   ├── [serviceId]/page.tsx            # /services/:serviceId
+│   │   │   ├── [serviceId]/agents/page.tsx    # /services/:serviceId/agents
+│   │   │   └── [serviceId]/edit/page.tsx      # /services/:serviceId/edit
+│   │   │   └── new/page.tsx                   # /services/new
+│   │   ├── settings/page.tsx                     # /settings
+│   │   ├── stats/page.tsx                        # /stats
+│   │   ├── usage/page.tsx                        # /usage
+│   │   ├── webhooks/page.tsx                     # /webhooks
+│   │   └── (shared components & libs live outside app/)
+│   ├── components/                                # Reusable UI components
+│   │   ├── Header.tsx
+│   │   ├── Footer.tsx
+│   │   ├── Card.tsx
+│   │   └── ...
+│   └── lib/                                       # API client, hooks, formatting, etc.
+│       ├── apiClient.ts
+│       ├── resolveApiBase.ts
+│       ├── useApi.ts
+│       └── ...
 ├── package.json
 ├── jest.config.ts
 ├── jest.setup.ts
 └── .github/workflows/
-    └── ci.yml            # CI: build, test
+    └── ci.yml                                    # CI: build, test
 ```
+
+## Shared components
+
+See [docs/components.md](docs/components.md) for the shared component catalog,
+including prop tables, usage examples, and accessibility notes for the
+primitives in `src/components`.
 
 ## Environment variables
 
@@ -110,7 +150,7 @@ The `/services` page now uses server-driven pagination with the shared `Spinner`
 |--------|-------------|
 | `npm run build` | Production build |
 | `npm test` | Run Jest tests |
-| `npm run test:coverage` | Run Jest with coverage |
+| `npm run test:coverage` | Run Jest with coverage | (not defined in this repo snapshot)
 | `npm run dev` | Development server |
 | `npm run lint` | Run ESLint |
 | `npm run typecheck` | Run the TypeScript compiler |

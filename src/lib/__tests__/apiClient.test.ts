@@ -1,4 +1,14 @@
 import type { ApiError } from "../apiClient";
+import {
+  ApiError,
+  ApiTimeoutError,
+  apiDelete,
+  apiFetch,
+  apiGet,
+  apiPatch,
+  apiPost,
+} from "../apiClient";
+import { resolveApiBase } from "../resolveApiBase";
 
 type ApiClientModule = typeof import("../apiClient");
 
@@ -138,6 +148,9 @@ describe("apiClient", () => {
 
     const { apiDelete } = await loadApiClient();
     await expect(apiDelete("/api/v1/things/1")).resolves.toBeUndefined();
+  afterEach(() => {
+    jest.useRealTimers();
+    global.fetch = originalFetch;
   });
 
   it("unwraps ApiError fields onto the thrown Error instance", async () => {
@@ -267,5 +280,122 @@ describe("apiClient", () => {
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe("Request failed");
     expect(error.error).toBe("server_error");
+  });
+
+  it("throws a generic ApiError when an error response is not JSON", async () => {
+    mockFetch(jest.fn(async () => new Response("Bad gateway", { status: 502 })));
+
+    await expect(apiGet("/api/v1/x")).rejects.toMatchObject({
+      message: "Request failed with status 502",
+      error: "http_error",
+    });
+  });
+
+  it("aborts the request when timeoutMs elapses", async () => {
+    jest.useFakeTimers();
+
+    mockFetch(
+      jest.fn(
+        (_url, init) =>
+          new Promise<Response>((_resolve, reject) => {
+            const signal = init?.signal;
+            signal?.addEventListener(
+              "abort",
+              () => reject(signal.reason),
+              { once: true }
+            );
+          })
+      )
+    );
+
+    const pending = apiFetch("/api/v1/slow", { timeoutMs: 50 });
+    const assertion = pending.catch((error) => {
+      expect(error).toBeInstanceOf(ApiTimeoutError);
+      expect(error).toMatchObject({
+        message: "request timed out after 50ms",
+        timeoutMs: 50,
+      });
+    });
+    await jest.advanceTimersByTimeAsync(50);
+
+    await assertion;
+  });
+
+  it("uses the default timeout when timeoutMs is omitted", async () => {
+    jest.useFakeTimers();
+
+    mockFetch(
+      jest.fn(
+        (_url, init) =>
+          new Promise<Response>((_resolve, reject) => {
+            const signal = init?.signal;
+            signal?.addEventListener(
+              "abort",
+              () => reject(signal.reason),
+              { once: true }
+            );
+          })
+      )
+    );
+
+    const pending = apiFetch("/api/v1/slow");
+    const assertion = pending.catch((error) => {
+      expect(error).toBeInstanceOf(ApiTimeoutError);
+      expect(error).toMatchObject({
+        message: "request timed out after 10000ms",
+        timeoutMs: 10_000,
+      });
+    });
+    await jest.advanceTimersByTimeAsync(10_000);
+
+    await assertion;
+  });
+
+  it("propagates caller aborts through the composed signal", async () => {
+    const callerController = new AbortController();
+
+    mockFetch(
+      jest.fn(
+        (_url, init) =>
+          new Promise<Response>((_resolve, reject) => {
+            const signal = init?.signal;
+            signal?.addEventListener(
+              "abort",
+              () => reject(signal.reason),
+              { once: true }
+            );
+          })
+      )
+    );
+
+    const pending = apiFetch("/api/v1/slow", {
+      signal: callerController.signal,
+      timeoutMs: 500,
+    });
+    const callerAbort = new Error("Caller cancelled");
+    callerAbort.name = "AbortError";
+    callerController.abort(callerAbort);
+
+    await expect(pending).rejects.toBe(callerAbort);
+  });
+
+  it("still resolves normally before timeout and leaves the signal un-aborted", async () => {
+    jest.useFakeTimers();
+
+    let fetchSignal: AbortSignal | undefined;
+    mockFetch(
+      jest.fn(async (_url, init) => {
+        fetchSignal = init?.signal as AbortSignal;
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      })
+    );
+
+    await expect(
+      apiFetch<{ ok: boolean }>("/api/v1/things", { timeoutMs: 100 })
+    ).resolves.toEqual({ ok: true });
+
+    expect(fetchSignal?.aborted).toBe(false);
+    await jest.advanceTimersByTimeAsync(100);
+    expect(fetchSignal?.aborted).toBe(false);
   });
 });

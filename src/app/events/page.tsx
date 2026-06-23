@@ -7,6 +7,12 @@ import { TimeAgo } from "@/components/TimeAgo";
 import { apiGet } from "@/lib/apiClient";
 import { safeFormatTimestamp, safeStringify } from "@/lib/format";
 import { useDebounce } from "@/lib/useDebounce";
+import { Spinner } from "@/components/Spinner";
+import {
+  safeFormatTimestamp,
+  safeStringify,
+} from "@/lib/format";
+import { useApi } from "@/lib/useApi";
 
 type AppEvent = {
   id: string;
@@ -125,6 +131,8 @@ export default function EventsPage() {
   const emptyDescription = hasFilter
     ? "Try a different event type or clear the filter."
     : "Incoming events will appear here once the backend records them.";
+  const state = useApi<{ items: AppEvent[] }>("/api/v1/events?limit=100");
+  const items = state.status === "ok" ? state.data.items : null;
 
   return (
     <main
@@ -164,8 +172,11 @@ export default function EventsPage() {
       </div>
 
       {error && (
+      <h1 className="text-3xl font-semibold tracking-tight">Event log</h1>
+      {state.status === "loading" && <Spinner label="Loading events" />}
+      {state.status === "error" && (
         <p role="alert" className="text-sm text-rose-600">
-          {error}
+          {state.error}
         </p>
       )}
 
@@ -187,6 +198,8 @@ export default function EventsPage() {
             ) : null
           }
         />
+      {items && items.length === 0 && (
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">No events yet.</p>
       )}
 
       {!loading && !error && visibleItems && visibleItems.length > 0 && (
