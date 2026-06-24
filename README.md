@@ -275,6 +275,10 @@ The `/about` page now exposes direct links to the dashboard surfaces described i
 
 The `/services` page now uses server-driven pagination with the shared `Spinner`, `EmptyState`, and `Pagination` components.
 
+See also: `docs/theming.md` for the full theme system, anti-FOUC contract, and token architecture.
+
+
+To prevent a flash of the wrong colour scheme (FOUC) when a user has chosen dark mode, a tiny blocking inline `<script>` is injected into `<head>` in `src/app/layout.tsx` **before the body renders**:
 - Requests are sent as `GET /api/v1/services?page=N&limit=25`.
 - The page assumes the backend returns a paged payload with `services` or `items`, plus `page` and `pageCount`.
 - If the backend clamps an out-of-range request, the UI follows the server-provided `page` and `pageCount` so the visible indicator stays in sync.
