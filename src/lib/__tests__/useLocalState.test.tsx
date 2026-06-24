@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { hydrateRoot, type Root } from "react-dom/client";
 
@@ -43,6 +43,7 @@ describe("useLocalState", () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+    cleanup();
   });
 
   it("renders the fallback on the server and hydrates from localStorage after mount", async () => {
@@ -76,8 +77,11 @@ describe("useLocalState", () => {
     });
 
     expect(onRender.mock.calls[0]?.[0]).toBe("fallback");
-    expect(onRender).toHaveBeenLastCalledWith("persisted");
-    expect(screen.getByTestId("value")).toHaveTextContent("persisted");
+
+    await waitFor(() => {
+      expect(onRender).toHaveBeenLastCalledWith("persisted");
+      expect(screen.getByTestId("value")).toHaveTextContent("persisted");
+    });
     expect(getItemSpy).toHaveBeenCalledWith(storageKey);
 
     expect(root).not.toBeNull();
@@ -90,11 +94,11 @@ describe("useLocalState", () => {
   it("writes the next value to state and localStorage", () => {
     const storageKey = "agentpay.useLocalState.write";
 
-    render(
+    const { getByRole } = render(
       <Probe storageKey={storageKey} initial="fallback" next="saved value" />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "update" }));
+    fireEvent.click(getByRole("button", { name: "update" }));
 
     expect(screen.getByTestId("value")).toHaveTextContent("saved value");
     expect(window.localStorage.getItem(storageKey)).toBe(
@@ -131,10 +135,12 @@ describe("useLocalState", () => {
         throw new Error("quota exceeded");
       });
 
-    render(<Probe storageKey={storageKey} initial="fallback" next="state only" />);
+    const { getByRole } = render(
+      <Probe storageKey={storageKey} initial="fallback" next="state only" />
+    );
 
     expect(() =>
-      fireEvent.click(screen.getByRole("button", { name: "update" }))
+      fireEvent.click(getByRole("button", { name: "update" }))
     ).not.toThrow();
 
     expect(screen.getByTestId("value")).toHaveTextContent("state only");

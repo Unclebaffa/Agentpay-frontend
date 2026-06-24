@@ -8,16 +8,22 @@ export function useLocalState<T>(
 ): [T, (next: T) => void] {
   const [value, setValue] = useState<T>(initial);
 
-  // Read from localStorage after mount only — keeps SSR output deterministic
-  // and avoids calling localStorage during renderToString.
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(key);
-      if (raw !== null) setValue(JSON.parse(raw) as T);
-    } catch {
-      /* ignore invalid JSON */
-    }
-  }, [key]);
+    const timer = window.setTimeout(() => {
+      try {
+        const raw = window.localStorage.getItem(key);
+        if (raw !== null) {
+          setValue(JSON.parse(raw) as T);
+        }
+      } catch {
+        setValue(initial);
+      }
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [initial, key]);
 
   const write = (next: T) => {
     setValue(next);

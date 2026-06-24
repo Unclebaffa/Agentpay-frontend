@@ -172,23 +172,34 @@ export async function apiFetch<T>(
   }
 }
 
-export function apiGet<T>(path: string, init: ApiFetchInit = {}): Promise<T> {
+export function apiGet<T>(path: string, init: ApiFetchInit = {}) {
   return apiFetch<T>(path, init);
 }
+
 export function apiPost<T>(
   path: string,
   body: unknown,
   init: ApiFetchInit = {}
-): Promise<T> {
-  return apiFetch<T>(path, { ...init, method: "POST", body: JSON.stringify(body) });
+) {
+  return apiFetch<T>(path, {
+    ...init,
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
+
 export function apiPatch<T>(
   path: string,
   body: unknown,
   init: ApiFetchInit = {}
-): Promise<T> {
-  return apiFetch<T>(path, { ...init, method: "PATCH", body: JSON.stringify(body) });
+) {
+  return apiFetch<T>(path, {
+    ...init,
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
 }
-export function apiDelete(path: string, init: ApiFetchInit = {}): Promise<void> {
+
+export function apiDelete(path: string, init: ApiFetchInit = {}) {
   return apiFetch<void>(path, { ...init, method: "DELETE" });
 }

@@ -87,9 +87,9 @@ describe("AdminPage pause/unpause", () => {
   });
 
   it("disables the toggle while the request is in flight to prevent double-submit", async () => {
-    let pauseResolve: (() => void) | null = null;
+    const pauseResolve: { current?: () => void } = {};
     const pausePromise = new Promise<void>((r) => {
-      pauseResolve = r;
+      pauseResolve.current = r;
     });
 
     const fetchMock = jest.fn<Promise<Response>, [input: RequestInfo | URL, init?: RequestInit]>() as unknown as jest.Mock;
@@ -123,7 +123,7 @@ describe("AdminPage pause/unpause", () => {
     fireEvent.click(screen.getByRole("button", { name: /^Working…$/i }));
     fireEvent.click(screen.getByRole("button", { name: /^Working…$/i }));
 
-    pauseResolve?.();
+    pauseResolve.current?.();
 
     await screen.findByText(/Paused/i);
 
