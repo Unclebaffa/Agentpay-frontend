@@ -122,6 +122,22 @@ See [docs/components.md](docs/components.md) for the shared component catalog,
 including prop tables, usage examples, and accessibility notes for the
 primitives in `src/components`.
 
+## Accessibility
+
+### Route loading skeleton
+
+The App Router fallback in [`src/app/loading.tsx`](src/app/loading.tsx) renders an
+animated `animate-pulse` skeleton during route transitions. So that
+assistive-technology users are not left on an apparently empty page, the skeleton is
+wrapped in a `role="status"` / `aria-live="polite"` region carrying an `sr-only`
+"Loading…" label — mirroring the pattern used by
+[`src/components/Spinner.tsx`](src/components/Spinner.tsx). The individual skeleton
+blocks are marked `aria-hidden="true"` so they are not announced one by one, and the
+pulse animation is disabled for users who request reduced motion via the
+`prefers-reduced-motion` rules in [`src/app/globals.css`](src/app/globals.css). This
+satisfies [WCAG 4.1.3 Status Messages](https://www.w3.org/WAI/WCAG21/Understanding/status-messages.html).
+Behaviour is covered by [`src/app/loading.test.tsx`](src/app/loading.test.tsx).
+
 ## API integration
 
 See [docs/api-integration.md](docs/api-integration.md) for the complete reference of
