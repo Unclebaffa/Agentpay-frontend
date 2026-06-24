@@ -126,6 +126,13 @@ Because the variable is `NEXT_PUBLIC_*`, its value is exposed to the browser. Ne
 
 A baseline security header set (CSP, `X-Frame-Options: DENY`, `Referrer-Policy`, `X-Content-Type-Options`, `Permissions-Policy`, HSTS) is wired up in `next.config.ts` via `src/lib/securityHeaders.ts`. The CSP `connect-src` directive tracks `NEXT_PUBLIC_AGENTPAY_API_BASE` automatically; `<a href>` links to external sites (`https://stellar.org`, etc.) remain navigable.
 
+## Link safety convention
+
+When rendering links:
+
+- Any external link rendered with `target="_blank"` must include `rel="noopener noreferrer"`.
+- Any `href` derived from backend/user data must be validated with `safeHref()` from `src/lib/url.ts`. Unsafe schemes like `javascript:` and `data:` are rejected.
+
 ## Event log rendering
 
 The `/events` page renders server-supplied JSON payloads. Each payload is serialised through `safeStringify` (`src/lib/format.ts`) with a hard cap (`EVENT_PAYLOAD_MAX_CHARS`, default 5,000 chars) and a visible `…(truncated)` marker. Circular references, `BigInt`, functions, and malformed timestamps are replaced with safe sentinels so a bad payload can't crash the page.

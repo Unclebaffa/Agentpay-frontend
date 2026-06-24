@@ -123,7 +123,8 @@ describe("AdminPage pause/unpause", () => {
     fireEvent.click(screen.getByRole("button", { name: /^Working…$/i }));
     fireEvent.click(screen.getByRole("button", { name: /^Working…$/i }));
 
-    pauseResolve?.();
+    (pauseResolve as (() => void) | null)?.();
+
 
     await screen.findByText(/Paused/i);
 
