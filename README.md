@@ -370,14 +370,17 @@ The `/agents` page lists every agent identity seen by the backend, paginated wit
 
 ## Commands
 
-| Command                 | Description                 |
-| ----------------------- | --------------------------- | ----------------------------------- |
-| `npm run build`         | Production build            |
-| `npm test`              | Run Jest tests              |
-| `npm run test:coverage` | Run Jest with coverage      | (not defined in this repo snapshot) |
-| `npm run dev`           | Development server          |
-| `npm run lint`          | Run ESLint                  |
-| `npm run typecheck`     | Run the TypeScript compiler |
+| Command                 | Description                                              |
+| ----------------------- | -------------------------------------------------------- |
+| `npm run build`         | Production build                                         |
+| `npm test`              | Run Jest tests (no coverage)                             |
+| `npm run test:coverage` | Run Jest with coverage — enforces all threshold gates    |
+| `npm run test:watch`    | Run Jest in interactive watch mode (local dev)           |
+| `npm run dev`           | Development server                                       |
+| `npm run lint`          | Run ESLint                                               |
+| `npm run typecheck`     | Run the TypeScript compiler                              |
+
+See [docs/testing.md](docs/testing.md) for the full coverage reference — per-file thresholds, report locations, and how to read the terminal output.
 
 ## CI/CD
 
