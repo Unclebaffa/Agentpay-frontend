@@ -134,8 +134,26 @@ the hooks in `src/lib`.
 ### Route-level boundary (`src/app/error.tsx`)
 
 Catches exceptions thrown inside individual route segments. Renders inside the
-root layout so the Header, Footer, and ToastProvider remain visible. Shows the
-error message and a "Try again" button that calls Next.js's `reset()`.
+root layout so the Header, Footer, and ToastProvider remain visible.
+
+Key features:
+
+- **Accessible error presentation:** Error message wrapped in `role="alert"` so
+  screen readers announce it immediately.
+- **Recovery action:** "Try again" button (using the shared `Button` component)
+  wired to Next.js's `reset()` callback allows users to retry without a full page
+  reload — essential for transient failures like flaky fetches.
+- **Production safety:** Only `error.message` is rendered; stack traces never
+  leak into the DOM.
+- **Debug support:** `error.digest` (if present) is logged to the console for
+  debugging but not prominently displayed to users.
+- **Keyboard accessible:** Button includes `focus-visible` outline and is fully
+  operable via keyboard.
+- **Dark mode compatible:** All styling supports both light and dark themes.
+
+Behaviour is covered by `src/app/error.test.tsx`, which asserts the alert region
+renders, the reset callback is invoked on click, no stack traces appear, and edge
+cases like empty messages are handled gracefully.
 
 ### Global boundary (`src/app/global-error.tsx`)
 
