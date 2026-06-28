@@ -169,7 +169,7 @@ export default function UsagePage() {
               : "Recorded."}
           </p>
         )}
-        {status.kind === "error" && status.requestId && (
+        {status.kind === "error" && (
           <p role="alert" className="text-sm text-rose-700 dark:text-rose-400">
             {formatAlert(status.message, status.requestId)}
           </p>

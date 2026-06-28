@@ -244,9 +244,11 @@ describe("ConfirmDialog", () => {
     render(<ConfirmDialogHarness dismissOnBackdrop={true} />);
 
     const { dialog } = openDialog();
-    const backdrop = dialog;
+    // The backdrop is the outer wrapper; the inner div is the dialog panel.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const backdrop = dialog.parentElement!;
 
-    fireEvent.mouseDown(dialog);
+    fireEvent.mouseDown(backdrop, { target: backdrop });
 
     expect(screen.queryByRole("dialog", { name: /delete project/i })).not.toBeInTheDocument();
   });
