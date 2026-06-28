@@ -1,5 +1,6 @@
 import { render, screen, act, fireEvent, cleanup } from "@testing-library/react";
 import DocsPage from "./page";
+import * as urlUtils from "@/lib/url";
 
 function mockClipboard(writeText = jest.fn().mockResolvedValue(undefined)) {
   Object.defineProperty(navigator, "clipboard", {
@@ -210,5 +211,59 @@ describe("DocsPage", () => {
     );
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  describe("link safety validation fallbacks", () => {
+    let safeHrefSpy: jest.SpyInstance;
+    const originalSafeHref = urlUtils.safeHref;
+
+    beforeEach(() => {
+      safeHrefSpy = jest.spyOn(urlUtils, "safeHref");
+    });
+
+    afterEach(() => {
+      safeHrefSpy.mockRestore();
+    });
+
+    it("renders relative OpenAPI link as plain text if validation fails", () => {
+      safeHrefSpy.mockImplementation((href) => {
+        if (href === "/api/v1/openapi.json") {
+          return { ok: false };
+        }
+        return originalSafeHref(href);
+      });
+
+      render(<DocsPage />);
+
+      // The link should not be present
+      expect(
+        screen.queryByRole("link", { name: /GET \/api\/v1\/openapi\.json/i }),
+      ).not.toBeInTheDocument();
+
+      // But the text should still be rendered as plain text
+      expect(screen.getByText(/GET \/api\/v1\/openapi\.json/i)).toBeInTheDocument();
+    });
+
+    it("renders external reference link as plain text if validation fails", () => {
+      safeHrefSpy.mockImplementation((href) => {
+        if (
+          href ===
+          "https://github.com/Agentpay-Org/Agentpay-frontend/blob/main/docs/api-integration.md"
+        ) {
+          return { ok: false };
+        }
+        return originalSafeHref(href);
+      });
+
+      render(<DocsPage />);
+
+      // The link should not be present
+      expect(
+        screen.queryByRole("link", { name: /dashboard API integration reference/i }),
+      ).not.toBeInTheDocument();
+
+      // But the text should still be rendered as plain text
+      expect(screen.getByText(/dashboard API integration reference/i)).toBeInTheDocument();
+    });
   });
 });
