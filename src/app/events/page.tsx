@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { EmptyState } from "@/components/EmptyState";
 import { SearchBar } from "@/components/SearchBar";
 import { TimeAgo } from "@/components/TimeAgo";
+import { Spinner } from "@/components/Spinner";
 import { apiGet } from "@/lib/apiClient";
 import { safeFormatTimestamp, safeStringify } from "@/lib/format";
 import { useDebounce } from "@/lib/useDebounce";
@@ -179,7 +180,11 @@ export default function EventsPage() {
         </p>
       )}
 
-      {loading && !error && <p>Loading…</p>}
+      {loading && !error && (
+        <div role="status" aria-busy="true" className="flex justify-center py-10">
+          <Spinner label="Loading events" />
+        </div>
+      )}
 
       {!loading && !error && visibleItems && visibleItems.length === 0 && (
         <EmptyState
