@@ -50,7 +50,7 @@ export default function UsagePage() {
   const [agent, setAgent] = useState("");
   const [serviceId, setServiceId] = useState("");
   const [requests, setRequests] = useState("");
-  const [requestsError, setRequestsError] = useState<string | undefined>();
+  const [requestsError, setRequestsError] = useState<string | null>(null);
   const [status, setStatus] = useState<UsageStatus>({ kind: "idle" });
   const [queryAgent, setQueryAgent] = useState("");
   const [queryService, setQueryService] = useState("");
@@ -61,8 +61,7 @@ export default function UsagePage() {
   const onRecord = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isRecording) return;
-    setRequestsError(undefined);
-
+    setRequestsError(null);
     const parsed = parsePositiveInt(requests);
     if (!parsed.ok) {
       // Surface the validation message through the field error.
@@ -147,9 +146,12 @@ export default function UsagePage() {
             value={requests}
             onChange={(e) => {
               setRequests(e.target.value);
-              setRequestsError(undefined);
+              setRequestsError(null);
+              if (status.kind === "error") {
+                setStatus({ kind: "idle" });
+              }
             }}
-            error={requestsError}
+            error={requestsError ?? undefined}
           />
 
           <button

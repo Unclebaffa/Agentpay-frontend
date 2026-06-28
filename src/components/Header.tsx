@@ -169,6 +169,7 @@ export function Header() {
 
   // Close desktop dropdown on route change.
   useEffect(() => {
+// eslint-disable-next-line react-hooks/set-state-in-effect
     setMoreOpen(false);
     setMobileOpen(false);
   }, [pathname]);

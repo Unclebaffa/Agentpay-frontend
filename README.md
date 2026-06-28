@@ -196,6 +196,11 @@ pulse animation is disabled for users who request reduced motion via the
 satisfies [WCAG 4.1.3 Status Messages](https://www.w3.org/WAI/WCAG21/Understanding/status-messages.html).
 Behaviour is covered by [`src/app/loading.test.tsx`](src/app/loading.test.tsx).
 
+### Events page loading state
+
+The events page loading indicator uses the shared [`src/components/Spinner.tsx`](src/components/Spinner.tsx) component. To ensure assistive technologies announce the fetching state, the `Spinner` is wrapped in a `role="status"` region with `aria-busy="true"`. This notifies screen readers when the page is loading initial data without stealing keyboard focus.
+Behaviour is covered by [`src/app/events/page.test.tsx`](src/app/events/page.test.tsx).
+
 ## API integration
 
 See [docs/api-integration.md](docs/api-integration.md) for the complete reference of
