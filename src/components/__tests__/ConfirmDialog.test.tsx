@@ -411,7 +411,6 @@ describe("ConfirmDialog", () => {
 
     const { dialog } = openDialog();
     // The backdrop is the outer wrapper; the inner div is the dialog panel.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const backdrop = dialog.parentElement!;
 
     fireEvent.mouseDown(backdrop, { target: backdrop });
@@ -422,7 +421,7 @@ describe("ConfirmDialog", () => {
   it("does not cancel when clicking inside the dialog panel", () => {
     render(<ConfirmDialogHarness dismissOnBackdrop={true} />);
 
-    const { dialog, cancelButton } = openDialog();
+    const { cancelButton } = openDialog();
 
     fireEvent.mouseDown(cancelButton);
 
