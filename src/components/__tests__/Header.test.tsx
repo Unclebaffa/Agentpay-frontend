@@ -49,6 +49,47 @@ describe("Header", () => {
     );
   });
 
+  it("marks exactly one link as active for the root route", () => {
+    mockPathname.mockReturnValue("/");
+    render(<Header />);
+    
+    // Exactly one link has aria-current="page"
+    const activeLinks = screen.getAllByRole("link").filter(
+      (link) => link.getAttribute("aria-current") === "page"
+    );
+    // Home link is active twice (desktop + mobile)
+    expect(activeLinks.length).toBe(2);
+    expect(activeLinks[0]).toHaveTextContent("Home");
+    expect(activeLinks[1]).toHaveTextContent("Home");
+  });
+
+  it("marks zero links as active for an unknown route", () => {
+    mockPathname.mockReturnValue("/unknown-route-123");
+    render(<Header />);
+    
+    const activeLinks = screen.getAllByRole("link").filter(
+      (link) => link.getAttribute("aria-current") === "page"
+    );
+    expect(activeLinks.length).toBe(0);
+  });
+
+  it("validates exactly one primary/secondary logical link is marked current per route", () => {
+    mockPathname.mockReturnValue("/services");
+    render(<Header />);
+    
+    // Open the secondary menu to expose secondary links
+    fireEvent.click(screen.getByRole("button", { name: /more/i }));
+    
+    // The active links should strictly be the desktop "Services" and the mobile "Services"
+    const activeLinks = screen.getAllByRole("link", { hidden: true }).filter(
+      (link) => link.getAttribute("aria-current") === "page"
+    );
+    
+    expect(activeLinks.length).toBe(2);
+    expect(activeLinks[0]).toHaveTextContent("Services");
+    expect(activeLinks[1]).toHaveTextContent("Services");
+  });
+
   it("shows More button that opens secondary menu", () => {
     mockPathname.mockReturnValue("/");
     render(<Header />);
