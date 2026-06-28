@@ -196,6 +196,8 @@ pulse animation is disabled for users who request reduced motion via the
 satisfies [WCAG 4.1.3 Status Messages](https://www.w3.org/WAI/WCAG21/Understanding/status-messages.html).
 Behaviour is covered by [`src/app/loading.test.tsx`](src/app/loading.test.tsx).
 
+To ensure slow client-rendered segments do not freeze the UI during navigation, data-heavy nested routes (like `/services`, `/agents`, and `/stats`) use their own segment-local `loading.tsx` files. These files reuse the shared `PageSkeleton` component to provide the same WCAG-compliant busy semantics as the root loader.
+
 ## API integration
 
 See [docs/api-integration.md](docs/api-integration.md) for the complete reference of
