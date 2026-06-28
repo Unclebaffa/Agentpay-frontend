@@ -183,6 +183,8 @@ Key design decisions:
 
 On small screens (below Tailwind `md`), the Header collapses into an accessible disclosure menu with a keyboard-operable toggle (Escape closes; focus returns to the toggle). The inline primary navigation remains for `md` and larger screens.
 
+Additionally, the Header marks exactly one active route strictly utilizing `aria-current="page"` (leveraging the client-side `usePathname()` context), creating a robust "you are here" cue for assistive technologies.
+
 ## Accessibility
 
 
@@ -365,8 +367,10 @@ i18n library is wired up yet and no rendered copy changes.
   ```
 
 - **Migrated so far:** [`src/components/Footer.tsx`](src/components/Footer.tsx),
-  the home page [`src/app/page.tsx`](src/app/page.tsx), and the about page
-  [`src/app/about/page.tsx`](src/app/about/page.tsx). Follow the same pattern when
+  the home page [`src/app/page.tsx`](src/app/page.tsx), the about page
+  [`src/app/about/page.tsx`](src/app/about/page.tsx), the docs page
+  [`src/app/docs/page.tsx`](src/app/docs/page.tsx), and the settings page
+  [`src/app/settings/page.tsx`](src/app/settings/page.tsx). Follow the same pattern when
   touching other surfaces — add the string to a namespace in `messages.ts`, then
   reference it from the component.
 - **Future i18n:** because the catalog is framework-agnostic, adopting
