@@ -410,10 +410,10 @@ describe("ConfirmDialog", () => {
     render(<ConfirmDialogHarness dismissOnBackdrop={true} />);
 
     const { dialog } = openDialog();
-    // The backdrop is the outer wrapper; the inner div is the dialog panel.
-    const backdrop = dialog.parentElement!;
+    const backdrop = dialog.parentElement;
+    expect(backdrop).not.toBeNull();
 
-    fireEvent.mouseDown(backdrop, { target: backdrop });
+    fireEvent.mouseDown(backdrop!);
 
     expect(screen.queryByRole("dialog", { name: /delete project/i })).not.toBeInTheDocument();
   });
