@@ -53,10 +53,11 @@ describe("Header", () => {
     mockPathname.mockReturnValue("/");
     render(<Header />);
     
+    // Open mobile menu so mobile links are rendered
+    fireEvent.click(getMobileToggle());
+    
     // Exactly one link has aria-current="page"
-    const activeLinks = screen.getAllByRole("link").filter(
-      (link) => link.getAttribute("aria-current") === "page"
-    );
+    const activeLinks = Array.from(document.querySelectorAll('[aria-current="page"]'));
     // Home link is active twice (desktop + mobile)
     expect(activeLinks.length).toBe(2);
     expect(activeLinks[0]).toHaveTextContent("Home");
@@ -67,9 +68,7 @@ describe("Header", () => {
     mockPathname.mockReturnValue("/unknown-route-123");
     render(<Header />);
     
-    const activeLinks = screen.getAllByRole("link").filter(
-      (link) => link.getAttribute("aria-current") === "page"
-    );
+    const activeLinks = Array.from(document.querySelectorAll('[aria-current="page"]'));
     expect(activeLinks.length).toBe(0);
   });
 
@@ -80,10 +79,11 @@ describe("Header", () => {
     // Open the secondary menu to expose secondary links
     fireEvent.click(screen.getByRole("button", { name: /more/i }));
     
+    // Open mobile menu so mobile links are rendered
+    fireEvent.click(getMobileToggle());
+    
     // The active links should strictly be the desktop "Services" and the mobile "Services"
-    const activeLinks = screen.getAllByRole("link", { hidden: true }).filter(
-      (link) => link.getAttribute("aria-current") === "page"
-    );
+    const activeLinks = Array.from(document.querySelectorAll('[aria-current="page"]'));
     
     expect(activeLinks.length).toBe(2);
     expect(activeLinks[0]).toHaveTextContent("Services");

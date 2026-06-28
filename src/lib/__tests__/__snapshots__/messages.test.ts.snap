@@ -38,6 +38,11 @@ exports[`messages catalog matches the committed catalog snapshot 1`] = `
       "description": "Choose a colour scheme. System follows your OS preference.",
       "heading": "Appearance",
     },
+    "connection": {
+      "description": "Resolved API base URL of the AgentPay backend.",
+      "heading": "Connection",
+      "label": "API Base URL",
+    },
     "heading": "Settings",
   },
 }
